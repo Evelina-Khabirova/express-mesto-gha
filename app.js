@@ -24,6 +24,8 @@ app.use('*', (req, res, next) => {
 
 function connect() {
   mongoose.connect('mongodb://localhost:27017/mestodb', {
+    useNewUrlParser: true,
+    useUnifiedTopology: false,
   });
   app.listen(PORT);
 }
