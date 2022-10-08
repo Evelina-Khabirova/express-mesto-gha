@@ -57,8 +57,16 @@ module.exports.deleteLike = (req, res) => {
     {$pull: {likes: req.user._id}},
     {new: true},
   )
-  .then(cards => res.send({data: cards}))
+  .then(cards => {
+    if(!cards) {
+      res.status(404).send({message: 'Карточка не найдена'});
+    }
+    res.send({data: cards});
+  })
   .catch((err) => {
+    if(err.kind === 'ObjectId') {
+      res.status(400).send({message: 'Получен неверный ID'});
+    }
     res.status(500).send({message: err.message})
   });
 };
