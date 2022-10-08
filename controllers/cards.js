@@ -39,7 +39,7 @@ module.exports.setLike = (req, res) => {
   )
   .then(cards => {
     if(!cards) {
-      res.status(404).send({message: 'Карточка не найдена'});
+      res.status(400).send({message: 'Карточка не найдена'});
     }
     res.send({data: cards});
   })
