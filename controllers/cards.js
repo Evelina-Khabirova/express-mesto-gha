@@ -37,7 +37,12 @@ module.exports.setLike = (req, res) => {
     {$addToSet: {likes:req.user._id }},
     {new: true},
   )
-  .then(cards => res.send({data: cards}))
+  .then(cards => {
+    if(!cards) {
+      res.status(404).send({message: 'Карточка не найдена'});
+    }
+    res.send({data: cards});
+  })
   .catch((err) => {
     res.status(500).send({message: err.message})
   });
