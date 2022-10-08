@@ -6,7 +6,7 @@ module.exports.getUsers = (req, res) => {
     res.status(200).send(users);
   }
   catch (err) {
-    if (err._message === 'card validation failed') {
+    if (err.name === 'ValidatorError') {
       res.status(400).send({message: 'Введены неверные данные'});
       return;
     }
@@ -39,7 +39,7 @@ module.exports.createProfile = (req, res) => {
     res.status(200).send(user);
   }
   catch (err) {
-    if (err._message === 'card validation failed') {
+    if (err.name === 'ValidatorError') {
       res.status(400).send({message: 'Введены неверные данные'});
       return;
     }
@@ -60,7 +60,7 @@ module.exports.editProfileInformation = (req, res) => {
     res.status(200).send(user);
   }
   catch (err) {
-    if (err._message === 'card validation failed') {
+    if (err.name === 'ValidatorError') {
       res.status(400).send({message: 'Введены неверные данные'});
       return;
     }
@@ -81,7 +81,7 @@ module.exports.editProfileAvatar = (req, res) => {
     res.status(200).send(user);
   }
   catch (err) {
-    if (err._message === 'card validation failed') {
+    if (err.name === 'ValidatorError') {
       res.status(400).send({message: 'Введены неверные данные'});
       return;
     }

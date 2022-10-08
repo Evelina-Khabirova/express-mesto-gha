@@ -6,7 +6,7 @@ module.exports.getAllCards = (req, res) => {
     res.status(200).send(cards);
   }
   catch (err) {
-    if (err._message === 'card validation failed') {
+    if (err.name === 'ValidatorError') {
       res.status(400).send({message: 'Введены неверные данные'});
     }
     res.send({message: err.message});
@@ -21,7 +21,7 @@ module.exports.createCard = (req, res) => {
     res.status(200).send(card);
   }
   catch (err) {
-    if (err._message === 'card validation failed') {
+    if (err.name === 'ValidatorError') {
       res.status(400).send({message: 'Введены неверные данные'});
     }
     res.status(500).send({message: err.message});
