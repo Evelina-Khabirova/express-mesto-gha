@@ -13,7 +13,12 @@ module.exports.getUsers = (req, res) => {
 
 module.exports.getProfile = (req, res) => {
   Users.findById(req.params.userId)
-  .then(users => res.send({data: users}))
+  .then(users => {
+    if(!users) {
+      res.status(404).send({message: 'Пользователь не найден'});
+    }
+    res.send({data: users});
+  })
   .catch((err) => {
     if (err.kind === 'ObjectId') {
       res.status(400).send({message: 'Получен неверный ID'});
