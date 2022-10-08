@@ -15,6 +15,9 @@ module.exports.getProfile = (req, res) => {
   Users.findById(req.params.userId)
   .then(users => res.send({data: users}))
   .catch((err) => {
+    if (err.kind === 'ObjectId') {
+      res.status(400).send({message: 'Получен неверный ID'});
+    }
     res.status(500).send({message: err.message})
   });
 };
