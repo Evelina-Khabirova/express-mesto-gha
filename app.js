@@ -4,6 +4,8 @@ const bodyParser = require('body-parser');
 const routerUser = require('./routers/users');
 const routerCard = require('./routers/cards');
 
+const { ERROR_NOT_FOUND = 404 } = process.env;
+
 const { PORT = 3000 } = process.env;
 const app = express();
 
@@ -15,10 +17,10 @@ app.use((req, res, next) => {
   };
   next();
 });
-app.use('/', routerUser);
-app.use('/', routerCard);
+app.use('/users', routerUser);
+app.use('/cards', routerCard);
 app.use('*', (req, res, next) => {
-  res.status(404).send({message: 'Сервер не найден'});
+  res.status(ERROR_NOT_FOUND).send({ message: 'Сервер не найден' });
   next();
 });
 
