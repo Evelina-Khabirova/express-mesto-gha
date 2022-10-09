@@ -17,8 +17,8 @@ app.use((req, res, next) => {
   };
   next();
 });
-app.use('/users', routerUser);
-app.use('/cards', routerCard);
+app.use('/', routerUser);
+app.use('/', routerCard);
 app.use('*', (req, res, next) => {
   res.status(ERROR_NOT_FOUND).send({ message: 'Сервер не найден' });
   next();
