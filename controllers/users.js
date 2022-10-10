@@ -1,15 +1,14 @@
 const Users = require('../models/users');
-
-const { VALIDATION_ERROR = 400, ERROR_NOT_FOUND = 404, SERVER_ERROR = 500 } = process.env;
+const ERROR = require('../utils/utils');
 
 module.exports.getUsers = (req, res) => {
   Users.find({})
     .then((users) => res.send({ data: users }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
+        res.status(ERROR.VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
       }
-      res.status(SERVER_ERROR).send({ message: err.message });
+      res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
     });
 };
 
@@ -17,15 +16,15 @@ module.exports.getProfile = (req, res) => {
   Users.findById(req.params.userId)
     .then((users) => {
       if (!users) {
-        res.status(ERROR_NOT_FOUND).send({ message: 'Пользователь не найден' });
+        res.status(ERROR.ERROR_NOT_FOUND).send({ message: 'Пользователь не найден' });
       }
       res.send({ data: users });
     })
     .catch((err) => {
       if (err.kind === 'ObjectId') {
-        res.status(VALIDATION_ERROR).send({ message: 'Получен неверный ID' });
+        res.status(ERROR.VALIDATION_ERROR).send({ message: 'Получен неверный ID' });
       }
-      res.status(SERVER_ERROR).send({ message: err.message });
+      res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
     });
 };
 
@@ -35,9 +34,9 @@ module.exports.createProfile = (req, res) => {
     .then((users) => res.send({ data: users }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
+        res.status(ERROR.VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
       }
-      res.status(SERVER_ERROR).send({ message: err.message });
+      res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
     });
 };
 
@@ -46,9 +45,9 @@ module.exports.editProfileInformation = (req, res) => {
     .then((users) => res.send({ data: users }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
+        res.status(ERROR.VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
       }
-      res.status(SERVER_ERROR).send({ message: err.message });
+      res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
     });
 };
 
@@ -57,8 +56,8 @@ module.exports.editProfileAvatar = (req, res) => {
     .then((users) => res.send({ data: users }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
+        res.status(ERROR.VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
       }
-      res.status(SERVER_ERROR).send({ message: err.message });
+      res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
     });
 };

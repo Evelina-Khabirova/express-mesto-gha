@@ -1,15 +1,14 @@
 const Card = require('../models/cards');
-
-const { VALIDATION_ERROR = 400, ERROR_NOT_FOUND = 404, SERVER_ERROR = 500 } = process.env;
+const ERROR = require('../utils/utils');
 
 module.exports.getAllCards = (req, res) => {
   Card.find({})
     .then((cards) => res.send({ data: cards }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
+        res.status(ERROR.VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
       }
-      res.status(SERVER_ERROR).send({ message: err.message });
+      res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
     });
 };
 
@@ -20,9 +19,9 @@ module.exports.createCard = (req, res) => {
     .then((cards) => res.send({ data: cards }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
+        res.status(ERROR.VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
       }
-      res.status(SERVER_ERROR).send({ message: err.message });
+      res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
     });
 };
 
@@ -30,15 +29,15 @@ module.exports.deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((cards) => {
       if (!cards) {
-        res.status(ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
+        res.status(ERROR.ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
       }
       res.send({ data: cards });
     })
     .catch((err) => {
       if (err.kind === 'ObjectId') {
-        res.status(VALIDATION_ERROR).send({ message: 'Получен неверный ID' });
+        res.status(ERROR.VALIDATION_ERROR).send({ message: 'Получен неверный ID' });
       }
-      res.status(SERVER_ERROR).send({ message: err.message });
+      res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
     });
 };
 
@@ -50,15 +49,15 @@ module.exports.setLike = (req, res) => {
   )
     .then((cards) => {
       if (!cards) {
-        res.status(ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
+        res.status(ERROR.ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
       }
       res.send({ data: cards });
     })
     .catch((err) => {
       if (err.kind === 'ObjectId') {
-        res.status(VALIDATION_ERROR).send({ message: 'Получен неверный ID' });
+        res.status(ERROR.VALIDATION_ERROR).send({ message: 'Получен неверный ID' });
       }
-      res.status(SERVER_ERROR).send({ message: err.message });
+      res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
     });
 };
 
@@ -70,14 +69,14 @@ module.exports.deleteLike = (req, res) => {
   )
     .then((cards) => {
       if (!cards) {
-        res.status(ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
+        res.status(ERROR.ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
       }
       res.send({ data: cards });
     })
     .catch((err) => {
       if (err.kind === 'ObjectId') {
-        res.status(VALIDATION_ERROR).send({ message: 'Получен неверный ID' });
+        res.status(ERROR.VALIDATION_ERROR).send({ message: 'Получен неверный ID' });
       }
-      res.status(SERVER_ERROR).send({ message: err.message });
+      res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
     });
 };

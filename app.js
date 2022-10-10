@@ -3,8 +3,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const routerUser = require('./routers/users');
 const routerCard = require('./routers/cards');
-
-const { ERROR_NOT_FOUND = 404 } = process.env;
+const ERROR = require('./utils/utils');
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -20,7 +19,7 @@ app.use((req, res, next) => {
 app.use('/', routerUser);
 app.use('/', routerCard);
 app.use('*', (req, res, next) => {
-  res.status(ERROR_NOT_FOUND).send({ message: 'Сервер не найден' });
+  res.status(ERROR.ERROR_NOT_FOUND).send({ message: 'Сервер не найден' });
   next();
 });
 
