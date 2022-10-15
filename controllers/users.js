@@ -30,19 +30,49 @@ module.exports.getProfile = (req, res) => {
     });
 };
 
-module.exports.createProfile = (req, res) => {
-  bcrypt.hash(req.body.password, 10)
-    .then((hash) => Users.create({
-      email: req.body.email,
-      password: hash,
-    }))
-    .then((user) => res.send(user))
+module.exports.getProfileId = (req, res) => {
+  Users.findById(req.user._id)
+    .then((users) => {
+      if (!users) {
+        res.status(ERROR.ERROR_NOT_FOUND).send({ message: 'Пользователь не найден' });
+      }
+      res.send({ data: users });
+    })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(ERROR.VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
+      if (err.kind === 'ObjectId') {
+        res.status(ERROR.VALIDATION_ERROR).send({ message: 'Получен неверный ID' });
       }
       res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
     });
+};
+
+module.exports.registerProfile = (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    res.status(ERROR.VALIDATION_ERROR).send({ message: 'Неверный email или пароль' });
+  }
+  bcrypt.hash(password, 10, (error, hash) => {
+    Users.findOne({ email })
+      .then((users) => {
+        if (users) {
+          res.status(ERROR.FORBIDDEN_ERROR).send({ message: 'Пользователь с такой почтой уже существует' });
+        }
+        Users.create({ ...req.body, password: hash })
+          .then((user) => res.send(user))
+          .catch((err) => {
+            if (err.name === 'ValidationError') {
+              res.status(ERROR.VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
+            }
+            res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
+          });
+      })
+      .catch((err) => {
+        if (err.name === 'ValidationError') {
+          res.status(ERROR.VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
+        }
+        res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
+      });
+  });
 };
 
 module.exports.createProfile = (req, res) => {
@@ -57,7 +87,7 @@ module.exports.createProfile = (req, res) => {
     });
 };
 
-module.exports.login = (req, res) => {
+module.exports.loginProfile = (req, res) => {
   const { email, password } = req.body;
   return Users.findUserByCredentials(email, password)
     .then((user) => {
