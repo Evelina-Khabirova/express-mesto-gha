@@ -1,8 +1,13 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+const { errors } = require('celebrate');
 const routerUser = require('./routers/users');
 const routerCard = require('./routers/cards');
+const { login, createUser } = require('./controllers/users');
+const { auth } = require('./middlewares/auth');
+const { validateCreateUser, validateLogin } = require('./middlewares/validations');
 const ERROR = require('./utils/utils');
 
 const { PORT = 3000 } = process.env;
@@ -10,14 +15,13 @@ const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use((req, res, next) => {
-  req.user = {
-    _id: '63418d9bbf4cfbadb6efc7f4',
-  };
-  next();
-});
+app.use(cookieParser());
+app.post('/signin', validateLogin, login);
+app.post('/signup', validateCreateUser, createUser);
+app.use(auth);
 app.use('/', routerUser);
 app.use('/', routerCard);
+app.use(errors());
 app.use('*', (req, res, next) => {
   res.status(ERROR.ERROR_NOT_FOUND).send({ message: 'Сервер не найден' });
   next();

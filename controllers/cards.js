@@ -80,3 +80,9 @@ module.exports.deleteLike = (req, res) => {
       res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
     });
 };
+
+module.exports.createCard = (req, res) => Card.create({
+  name: req.body.name,
+  link: req.body.link,
+  owner: req.user._id,
+});
