@@ -6,6 +6,7 @@ const NotFoundError = require('../error/NotFoundError');
 const ForbiddenError = require('../error/ForbiddenError');
 const UnauthorizedError = require('../error/UnauthorizedError');
 const ValidationError = require('../error/ValidationError');
+const ConflictError = require('../error/ConflictError');
 
 module.exports.getUsers = (req, res, next) => {
   Users.find({})
@@ -67,7 +68,7 @@ module.exports.registerProfile = (req, res, next) => {
     Users.findOne({ email })
       .then((users) => {
         if (users) {
-          next(new ForbiddenError('Пользователь с такой почтой уже существует'));
+          next(new ConflictError('Пользователь с такой почтой уже существует'));
         }
         Users.create({ ...req.body, password: hash })
           .then((user) => res.send({
