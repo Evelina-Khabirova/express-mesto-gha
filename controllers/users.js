@@ -1,10 +1,16 @@
 const bcrypt = require('bcryptjs');
 const Users = require('../models/users');
 const ERROR = require('../utils/utils');
+const { getJwt, isAuth } = require('../utils/jwt');
 
 module.exports.getUsers = (req, res) => {
   Users.find({})
-    .then((users) => res.send({ data: users }))
+    .then((users) => {
+      if (!isAuth(req.headers.authorization)) {
+        res.status(ERROR.UNAUTHORIZED_ERROR).send({ message: 'Пользователь не авторизирован' });
+      }
+      res.send({ data: users });
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(ERROR.VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
@@ -16,6 +22,9 @@ module.exports.getUsers = (req, res) => {
 module.exports.getProfile = (req, res) => {
   Users.findById(req.params.userId)
     .then((users) => {
+      if (!isAuth(req.headers.authorization)) {
+        res.status(ERROR.UNAUTHORIZED_ERROR).send({ message: 'Пользователь не авторизирован' });
+      }
       if (!users) {
         res.status(ERROR.ERROR_NOT_FOUND).send({ message: 'Пользователь не найден' });
       }
@@ -100,7 +109,8 @@ module.exports.loginProfile = (req, res) => {
         if (!isValidPassword) {
           res.status(ERROR.UNAUTHORIZED_ERROR).send({ message: 'Неверный пароль' });
         }
-        res.send({ user: users.email });
+        const token = getJwt(users._id);
+        res.send({ token });
       });
     })
     .catch((err) => {
