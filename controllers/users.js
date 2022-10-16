@@ -1,5 +1,4 @@
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const Users = require('../models/users');
 const ERROR = require('../utils/utils');
 
@@ -89,24 +88,24 @@ module.exports.createProfile = (req, res) => {
 
 module.exports.loginProfile = (req, res) => {
   const { email, password } = req.body;
-  return Users.findUserByCredentials(email, password)
-    .then((user) => {
-      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
-      res.send({ token });
-      if (!user) {
-        res.status(ERROR.ERROR_NOT_FOUND).send({ message: 'Неправильные почта или пароль' });
+  if (!email || !password) {
+    res.status(ERROR.VALIDATION_ERROR).send({ message: 'Неверный email или пароль' });
+  }
+  Users.findOne({ email })
+    .then((users) => {
+      if (!users) {
+        res.status(ERROR.FORBIDDEN_ERROR).send({ message: 'Такого пользователя не существует' });
       }
-      return bcrypt.compare(password, user.password);
-    })
-    .then((matched) => {
-      if (!matched) {
-        return Promise.reject(new Error('Неправильные почта или пароль'));
-      }
-      return res.send({ message: 'Всё верно!' });
+      bcrypt.compare(password, users.password, (error, isValidPassword) => {
+        if (!isValidPassword) {
+          res.status(ERROR.UNAUTHORIZED_ERROR).send({ message: 'Неверный пароль' });
+        }
+        res.send({ user: users.email });
+      });
     })
     .catch((err) => {
-      if (err.name === 'UnauthorizedError') {
-        res.status(ERROR.UNAUTHORIZED_ERROR).send({ message: 'Неверный email' });
+      if (err.name === 'ValidationError') {
+        res.status(ERROR.VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
       }
       res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
     });
