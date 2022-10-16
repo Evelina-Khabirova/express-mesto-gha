@@ -7,6 +7,7 @@ const routerUser = require('./routers/users');
 const routerCard = require('./routers/cards');
 const { loginProfile, registerProfile } = require('./controllers/users');
 const { auth } = require('./middlewares/auth');
+const { validateLogin, validateCreateProfile } = require('./middlewares/validations');
 const ERROR = require('./utils/utils');
 
 const { PORT = 3000 } = process.env;
@@ -15,8 +16,8 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.post('/signin', loginProfile);
-app.post('/signup', registerProfile);
+app.post('/signin', validateLogin, loginProfile);
+app.post('/signup', validateCreateProfile, registerProfile);
 app.use(auth);
 app.use('/', routerUser);
 app.use('/', routerCard);
