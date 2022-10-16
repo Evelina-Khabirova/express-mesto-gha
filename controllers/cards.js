@@ -1,47 +1,49 @@
 const Card = require('../models/cards');
-const ERROR = require('../utils/utils');
+const ServerError = require('../error/ServerError');
+const NotFoundError = require('../error/NotFoundError');
+const ValidationError = require('../error/ValidationError');
 
-module.exports.getAllCards = (req, res) => {
+module.exports.getAllCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.send({ data: cards }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(ERROR.VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
+        next(new ValidationError('Неправильный ввод данных'));
       }
-      res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
+      next(new ServerError('Ошибка на сервере'));
     });
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
   Card.create({ name, link, owner })
     .then((cards) => res.send({ data: cards }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(ERROR.VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
+        next(new NotFoundError('Неправильный ввод данных'));
       }
-      res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
+      next(new ServerError('Ошибка на сервере'));
     });
 };
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((cards) => {
       if (!cards) {
-        res.status(ERROR.ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
+        next(new NotFoundError('Карточка не найдена'));
       }
       res.send({ data: cards });
     })
     .catch((err) => {
       if (err.kind === 'ObjectId') {
-        res.status(ERROR.VALIDATION_ERROR).send({ message: 'Получен неверный ID' });
+        next(new ValidationError('Получен неверный ID'));
       }
-      res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
+      next(new ServerError('Ошибка на сервере'));
     });
 };
 
-module.exports.setLike = (req, res) => {
+module.exports.setLike = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
@@ -49,19 +51,19 @@ module.exports.setLike = (req, res) => {
   )
     .then((cards) => {
       if (!cards) {
-        res.status(ERROR.ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
+        next(new NotFoundError('Карточка не найдена'));
       }
       res.send({ data: cards });
     })
     .catch((err) => {
       if (err.kind === 'ObjectId') {
-        res.status(ERROR.VALIDATION_ERROR).send({ message: 'Получен неверный ID' });
+        next(new ValidationError('Получен неверный ID'));
       }
-      res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
+      next(new ServerError('Ошибка на сервере'));
     });
 };
 
-module.exports.deleteLike = (req, res) => {
+module.exports.deleteLike = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
@@ -69,14 +71,14 @@ module.exports.deleteLike = (req, res) => {
   )
     .then((cards) => {
       if (!cards) {
-        res.status(ERROR.ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
+        next(new NotFoundError('Карточка не найдена'));
       }
       res.send({ data: cards });
     })
     .catch((err) => {
       if (err.kind === 'ObjectId') {
-        res.status(ERROR.VALIDATION_ERROR).send({ message: 'Получен неверный ID' });
+        next(new ValidationError('Получен неверный ID'));
       }
-      res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
+      next(new ServerError('Ошибка на сервере'));
     });
 };

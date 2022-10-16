@@ -8,7 +8,8 @@ const routerCard = require('./routers/cards');
 const { loginProfile, registerProfile } = require('./controllers/users');
 const { auth } = require('./middlewares/auth');
 const { validateLogin, validateCreateProfile } = require('./middlewares/validations');
-const ERROR = require('./utils/utils');
+const errorHandler = require('./middlewares/errorHandler');
+const NotFoundError = require('./error/NotFoundError');
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -23,9 +24,10 @@ app.use('/', routerUser);
 app.use('/', routerCard);
 app.use(errors());
 app.use('*', (req, res, next) => {
-  res.status(ERROR.ERROR_NOT_FOUND).send({ message: 'Сервер не найден' });
+  next(new NotFoundError('Сервер не найден'));
   next();
 });
+app.use(errorHandler);
 
 function connect() {
   mongoose.connect('mongodb://localhost:27017/mestodb', {

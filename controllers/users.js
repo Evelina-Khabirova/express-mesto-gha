@@ -1,113 +1,117 @@
 const bcrypt = require('bcryptjs');
 const Users = require('../models/users');
-const ERROR = require('../utils/utils');
 const { getJwt, isAuth } = require('../utils/jwt');
+const ServerError = require('../error/ServerError');
+const NotFoundError = require('../error/NotFoundError');
+const ForbiddenError = require('../error/ForbiddenError');
+const UnauthorizedError = require('../error/UnauthorizedError');
+const ValidationError = require('../error/ValidationError');
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   Users.find({})
     .then((users) => {
       if (!isAuth(req.headers.authorization)) {
-        res.status(ERROR.UNAUTHORIZED_ERROR).send({ message: 'Пользователь не авторизирован' });
+        next(new UnauthorizedError('Пользователь не авторизирован'));
       }
       res.send({ data: users });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(ERROR.VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
+        next(new ValidationError('Неправильный ввод данных'));
       }
-      res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
+      next(new ServerError('Ошибка на сервере'));
     });
 };
 
-module.exports.getProfile = (req, res) => {
+module.exports.getProfile = (req, res, next) => {
   Users.findById(req.params.userId)
     .then((users) => {
       if (!isAuth(req.headers.authorization)) {
-        res.status(ERROR.UNAUTHORIZED_ERROR).send({ message: 'Пользователь не авторизирован' });
+        next(new UnauthorizedError('Пользователь не авторизирован'));
       }
       if (!users) {
-        res.status(ERROR.ERROR_NOT_FOUND).send({ message: 'Пользователь не найден' });
+        next(new NotFoundError('Пользователь не найден'));
       }
       res.send({ data: users });
     })
     .catch((err) => {
       if (err.kind === 'ObjectId') {
-        res.status(ERROR.VALIDATION_ERROR).send({ message: 'Получен неверный ID' });
+        next(new ValidationError('Получен неверный ID'));
       }
-      res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
+      next(new ServerError('Ошибка на сервере'));
     });
 };
 
-module.exports.getProfileId = (req, res) => {
+module.exports.getProfileId = (req, res, next) => {
   Users.findById(req.user._id)
     .then((users) => {
       if (!users) {
-        res.status(ERROR.ERROR_NOT_FOUND).send({ message: 'Пользователь не найден' });
+        next(new NotFoundError('Пользователь не найден'));
       }
       res.send({ data: users });
     })
     .catch((err) => {
       if (err.kind === 'ObjectId') {
-        res.status(ERROR.VALIDATION_ERROR).send({ message: 'Получен неверный ID' });
+        next(new ValidationError('Получен неверный ID'));
       }
-      res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
+      next(new ServerError('Ошибка на сервере'));
     });
 };
 
-module.exports.registerProfile = (req, res) => {
+module.exports.registerProfile = (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    res.status(ERROR.VALIDATION_ERROR).send({ message: 'Неверный email или пароль' });
+    next(new ValidationError('Неверный email или пароль'));
   }
   bcrypt.hash(password, 10, (error, hash) => {
     Users.findOne({ email })
       .then((users) => {
         if (users) {
-          res.status(ERROR.FORBIDDEN_ERROR).send({ message: 'Пользователь с такой почтой уже существует' });
+          next(new ForbiddenError('Пользователь с такой почтой уже существует'));
         }
         Users.create({ ...req.body, password: hash })
           .then((user) => res.send(user))
           .catch((err) => {
             if (err.name === 'ValidationError') {
-              res.status(ERROR.VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
+              next(new ValidationError('Неправильный ввод данных'));
             }
-            res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
+            next(new ServerError('Ошибка на сервере'));
           });
       })
       .catch((err) => {
         if (err.name === 'ValidationError') {
-          res.status(ERROR.VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
+          next(new ValidationError('Неправильный ввод данных'));
         }
-        res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
+        next(new ServerError('Ошибка на сервере'));
       });
   });
 };
 
-module.exports.createProfile = (req, res) => {
+module.exports.createProfile = (req, res, next) => {
   const { name, about, avatar } = req.body;
   Users.create({ name, about, avatar })
     .then((users) => res.send({ data: users }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(ERROR.VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
+        next(new ValidationError('Неправильный ввод данных'));
       }
-      res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
+      next(new ServerError('Ошибка на сервере'));
     });
 };
 
-module.exports.loginProfile = (req, res) => {
+module.exports.loginProfile = (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    res.status(ERROR.VALIDATION_ERROR).send({ message: 'Неверный email или пароль' });
+    next(new ValidationError('Неправильный ввод данных'));
   }
   Users.findOne({ email })
     .then((users) => {
       if (!users) {
-        res.status(ERROR.FORBIDDEN_ERROR).send({ message: 'Такого пользователя не существует' });
+        next(new ForbiddenError('Такого пользователя не существует'));
       }
       bcrypt.compare(password, users.password, (error, isValidPassword) => {
         if (!isValidPassword) {
-          res.status(ERROR.UNAUTHORIZED_ERROR).send({ message: 'Неверный пароль' });
+          next(new UnauthorizedError('Неверный пароль'));
         }
         const token = getJwt(users._id);
         res.send({ token });
@@ -115,30 +119,30 @@ module.exports.loginProfile = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(ERROR.VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
+        next(new ValidationError('Неправильный ввод данных'));
       }
-      res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
+      next(new ServerError('Ошибка на сервере'));
     });
 };
 
-module.exports.editProfileInformation = (req, res) => {
+module.exports.editProfileInformation = (req, res, next) => {
   Users.findByIdAndUpdate(req.user._id, req.body, { new: true, runValidators: true })
     .then((users) => res.send({ data: users }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(ERROR.VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
+        next(new ValidationError('Неправильный ввод данных'));
       }
-      res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
+      next(new ServerError('Ошибка на сервере'));
     });
 };
 
-module.exports.editProfileAvatar = (req, res) => {
+module.exports.editProfileAvatar = (req, res, next) => {
   Users.findByIdAndUpdate(req.user._id, req.body, { new: true, runValidators: true })
     .then((users) => res.send({ data: users }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(ERROR.VALIDATION_ERROR).send({ message: 'Неправильный ввод данных' });
+        next(new ValidationError('Неправильный ввод данных'));
       }
-      res.status(ERROR.SERVER_ERROR).send({ message: 'Ошибка на сервере' });
+      next(new ServerError('Ошибка на сервере'));
     });
 };
