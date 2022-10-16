@@ -3,7 +3,6 @@ const Users = require('../models/users');
 const { getJwt, isAuth } = require('../utils/jwt');
 const ServerError = require('../error/ServerError');
 const NotFoundError = require('../error/NotFoundError');
-const ForbiddenError = require('../error/ForbiddenError');
 const UnauthorizedError = require('../error/UnauthorizedError');
 const ValidationError = require('../error/ValidationError');
 const ConflictError = require('../error/ConflictError');
@@ -114,7 +113,7 @@ module.exports.loginProfile = (req, res, next) => {
   Users.findOne({ email })
     .then((users) => {
       if (!users) {
-        next(new ForbiddenError('Такого пользователя не существует'));
+        next(new UnauthorizedError('Такого пользователя не существует'));
       }
       bcrypt.compare(password, users.password, (error, isValidPassword) => {
         if (!isValidPassword) {
