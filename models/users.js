@@ -17,6 +17,8 @@ const userSchema = new mongoose.Schema({
     default: 'Жак-Ив Кусто',
     type: String,
     required: true,
+    minlength: 2,
+    maxlength: 30,
   },
   about: {
     default: 'Исследователь',

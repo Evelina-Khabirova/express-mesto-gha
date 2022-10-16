@@ -70,7 +70,13 @@ module.exports.registerProfile = (req, res, next) => {
           next(new ForbiddenError('Пользователь с такой почтой уже существует'));
         }
         Users.create({ ...req.body, password: hash })
-          .then((user) => res.send(user))
+          .then((user) => res.send({
+            email: user.email,
+            name: user.name,
+            about: user.about,
+            avatar: user.avatar,
+            _id: user._id,
+          }))
           .catch((err) => {
             if (err.name === 'ValidationError') {
               next(new ValidationError('Неправильный ввод данных'));
