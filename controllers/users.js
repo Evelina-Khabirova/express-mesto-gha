@@ -119,9 +119,9 @@ module.exports.loginProfile = (req, res, next) => {
         if (!isValidPassword) {
           next(new UnauthorizedError('Неверный пароль'));
         }
-        const token = getJwt(users._id);
-        res.send({ token });
       });
+      const token = getJwt(users._id);
+      res.send({ token });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
