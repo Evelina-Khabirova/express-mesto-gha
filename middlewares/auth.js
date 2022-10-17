@@ -6,17 +6,19 @@ module.exports.auth = (req, res, next) => {
   try {
     const { token } = req.cookies;
     if (!token) {
-      next(new UnauthorizedError('Необходима авторизация'));
+      next(new UnauthorizedError('Отсутствует токен'));
       return;
     }
     const payload = jwt.verify(token, 'some-secret-key');
     req.user = payload;
+    res.send(req.user);
   } catch (err) {
-    if (err.name === 'UnauthorizedError') {
-      next(new UnauthorizedError('Пользователь не авторизирован'));
+    if (err.name === 'JsonWebTokenError') {
+      next(new UnauthorizedError('Некорректный токен'));
       return;
     }
-    next(new ServerError('Ошибка на сервере'));
+
+    next(new ServerError(err));
   }
   next();
 };
