@@ -1,6 +1,7 @@
+const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const Users = require('../models/users');
-const { getJwt, isAuth } = require('../utils/jwt');
+const { isAuth } = require('../utils/jwt');
 const ServerError = require('../error/ServerError');
 const NotFoundError = require('../error/NotFoundError');
 const UnauthorizedError = require('../error/UnauthorizedError');
@@ -120,7 +121,7 @@ module.exports.loginProfile = (req, res, next) => {
           next(new UnauthorizedError('Неверный пароль'));
         }
       });
-      const token = getJwt(users._id);
+      const token = jwt.sign({ _id: users._id }, 'some-secret-key', { expiresIn: '7d' });
       res.send({ token });
     })
     .catch((err) => {
