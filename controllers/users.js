@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const Users = require('../models/users');
-const { isAuth } = require('../utils/jwt');
 const ServerError = require('../error/ServerError');
 const NotFoundError = require('../error/NotFoundError');
 const UnauthorizedError = require('../error/UnauthorizedError');
@@ -11,9 +10,6 @@ const ConflictError = require('../error/ConflictError');
 module.exports.getUsers = (req, res, next) => {
   Users.find({})
     .then((users) => {
-      if (!isAuth(req.headers.authorization)) {
-        next(new UnauthorizedError('Пользователь не авторизирован'));
-      }
       res.send({ data: users });
     })
     .catch((err) => {
@@ -25,11 +21,8 @@ module.exports.getUsers = (req, res, next) => {
 };
 
 module.exports.getProfile = (req, res, next) => {
-  Users.findById(req.params.userId)
+  Users.findById(req.user._id)
     .then((users) => {
-      if (!isAuth(req.headers.authorization)) {
-        next(new UnauthorizedError('Пользователь не авторизирован'));
-      }
       if (!users) {
         next(new NotFoundError('Пользователь не найден'));
       }

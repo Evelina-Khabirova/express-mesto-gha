@@ -11,7 +11,6 @@ module.exports.auth = (req, res, next) => {
     }
     const payload = jwt.verify(token, 'some-secret-key');
     req.user = payload;
-    res.send({ message: 'Пользователь успешно авторизирован' });
   } catch (err) {
     if (err.name === 'JsonWebTokenError') {
       next(new UnauthorizedError('Некорректный токен'));
