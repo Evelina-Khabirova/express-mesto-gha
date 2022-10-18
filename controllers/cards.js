@@ -29,7 +29,7 @@ module.exports.createCard = (req, res, next) => {
 };
 
 module.exports.deleteCard = (req, res, next) => {
-  Card.findById(req.params.cardId)
+  Card.findByIdAndDelete(req.params.cardId)
     .then((cards) => {
       if (!cards) {
         next(new NotFoundError('Карточка не найдена'));
@@ -39,8 +39,7 @@ module.exports.deleteCard = (req, res, next) => {
         next(new ForbiddenError('Нельзя удалять чужие карточки'));
         return;
       }
-      Card.deleteOne(cards);
-      res.send({ data: cards });
+      res.send(cards);
       next();
     })
     .catch((err) => {
