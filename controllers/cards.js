@@ -29,17 +29,19 @@ module.exports.createCard = (req, res, next) => {
 };
 
 module.exports.deleteCard = (req, res, next) => {
-  Card.findByIdAndRemove(req.params.cardId)
+  Card.findById(req.params.cardId)
     .then((cards) => {
       if (!cards) {
         next(new NotFoundError('Карточка не найдена'));
         return;
       }
-      if (cards.owner !== req.user._id) {
+      if (cards.owner != req.user._id) {
         next(new ForbiddenError('Нельзя удалять чужие карточки'));
         return;
       }
+      Card.deleteOne(cards);
       res.send({ data: cards });
+      next();
     })
     .catch((err) => {
       if (err.kind === 'ObjectId') {
