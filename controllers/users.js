@@ -130,7 +130,7 @@ module.exports.loginProfile = (req, res, next) => {
 
 module.exports.editProfileInformation = (req, res, next) => {
   Users.findByIdAndUpdate(req.user._id, req.body, { new: true, runValidators: true })
-    .then((users) => res.send({ data: users }))
+    .then((users) => res.send(users))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new ValidationError('Неправильный ввод данных'));
