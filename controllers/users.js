@@ -122,7 +122,10 @@ module.exports.loginProfile = (req, res, next) => {
         }
       });
       const token = jwt.sign({ _id: users._id }, 'some-secret-key', { expiresIn: '7d' });
-      res.send({ token });
+      res.cookie('token', token, {
+        maxAge: 3600000 * 24 * 7,
+        httpOnly: true,
+      }).send({ token }).end();
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {

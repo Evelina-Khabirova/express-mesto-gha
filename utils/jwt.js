@@ -2,10 +2,6 @@ const jwt = require('jsonwebtoken');
 const USERS = require('../models/users');
 const TOKEN = require('./token');
 
-const getJwt = (_id) => {
-  jwt.sign({ id: _id }, TOKEN.JWT_SECRET);
-};
-
 const isAuth = (token) => {
   jwt.verify(token, TOKEN.JWT_SECRET, (error, decoded) => {
     if (error) {
@@ -18,4 +14,4 @@ const isAuth = (token) => {
   });
 };
 
-module.exports = { getJwt, isAuth };
+module.exports = { isAuth };
