@@ -32,6 +32,7 @@ module.exports.deleteCard = (req, res, next) => {
     .then((cards) => {
       if (!cards) {
         next(new NotFoundError('Карточка не найдена'));
+        return;
       }
       res.send({ data: cards });
     })
@@ -52,6 +53,7 @@ module.exports.setLike = (req, res, next) => {
     .then((cards) => {
       if (!cards) {
         next(new NotFoundError('Карточка не найдена'));
+        return;
       }
       res.send({ data: cards });
     })
@@ -72,6 +74,7 @@ module.exports.deleteLike = (req, res, next) => {
     .then((cards) => {
       if (!cards) {
         next(new NotFoundError('Карточка не найдена'));
+        return;
       }
       res.send({ data: cards });
     })
