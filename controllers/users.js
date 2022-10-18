@@ -37,7 +37,7 @@ module.exports.getProfile = (req, res, next) => {
 };
 
 module.exports.getProfileId = (req, res, next) => {
-  Users.findById(req.user._id)
+  Users.findById(req.params.userId)
     .then((users) => {
       if (!users) {
         next(new NotFoundError('Пользователь не найден'));
