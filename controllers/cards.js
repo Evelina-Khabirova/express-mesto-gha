@@ -57,7 +57,7 @@ module.exports.setLike = (req, res, next) => {
     })
     .catch((err) => {
       if (err.kind === 'ObjectId') {
-        next(new ValidationError('Получен неверный ID'));
+        next(new NotFoundError('Получен неверный ID'));
       }
       next(new ServerError('Ошибка на сервере'));
     });
@@ -77,7 +77,7 @@ module.exports.deleteLike = (req, res, next) => {
     })
     .catch((err) => {
       if (err.kind === 'ObjectId') {
-        next(new ValidationError('Получен неверный ID'));
+        next(new NotFoundError('Получен неверный ID'));
       }
       next(new ServerError('Ошибка на сервере'));
     });
