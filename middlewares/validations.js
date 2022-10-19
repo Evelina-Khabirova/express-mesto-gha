@@ -33,7 +33,7 @@ module.exports.validateCreateProfile = celebrate({
     about: Joi.string().min(2).max(30),
     avatar: Joi.string().custom(validateLink),
     email: Joi.string().required().email(),
-    password: Joi.string().required().min(8),
+    password: Joi.string().required().min(),
   }),
 });
 

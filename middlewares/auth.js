@@ -17,7 +17,7 @@ module.exports.auth = (req, res, next) => {
       return;
     }
 
-    next(new ServerError(err));
+    next(new ServerError('Ошибка сервера'));
   }
   next();
 };
