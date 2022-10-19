@@ -7,10 +7,7 @@ const ForbiddenError = require('../error/ForbiddenError');
 module.exports.getAllCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.send({ data: cards }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new ValidationError('Неправильный ввод данных'));
-      }
+    .catch(() => {
       next(new ServerError('Ошибка на сервере'));
     });
 };
@@ -22,31 +19,27 @@ module.exports.createCard = (req, res, next) => {
     .then((cards) => res.send({ data: cards }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new ValidationError('Неправильный ввод данных'));
+        return next(new ValidationError('Неправильный ввод данных'));
       }
-      next(new ServerError('Ошибка на сервере'));
+      return next(new ServerError('Ошибка на сервере'));
     });
 };
 
 module.exports.deleteCard = (req, res, next) => {
-  Card.findByIdAndDelete(req.params.cardId)
+  Card.findById(req.params.cardId)
+    .orFail(() => new NotFoundError('Карточки с таким id не сущестует'))
     .then((cards) => {
-      if (!cards) {
-        next(new NotFoundError('Карточка не найдена'));
-        return;
+      if (cards.owner.equals(req.user._id)) {
+        return next(new ForbiddenError('Нельзя удалять чужие карточки'));
       }
-      if (cards.owner != req.user._id) {
-        next(new ForbiddenError('Нельзя удалять чужие карточки'));
-        return;
-      }
-      res.send(cards);
-      next();
+      return cards.remove()
+        .then(() => res.send(cards));
     })
     .catch((err) => {
       if (err.kind === 'ObjectId') {
-        next(new NotFoundError('Получен неверный ID'));
+        return next(new NotFoundError('Получен неверный ID'));
       }
-      next(new ServerError('Ошибка на сервере'));
+      return next(new ServerError('Ошибка на сервере'));
     });
 };
 
@@ -65,9 +58,9 @@ module.exports.setLike = (req, res, next) => {
     })
     .catch((err) => {
       if (err.kind === 'ObjectId') {
-        next(new NotFoundError('Получен неверный ID'));
+        return next(new NotFoundError('Получен неверный ID'));
       }
-      next(new ServerError('Ошибка на сервере'));
+      return next(new ServerError('Ошибка на сервере'));
     });
 };
 
@@ -86,8 +79,8 @@ module.exports.deleteLike = (req, res, next) => {
     })
     .catch((err) => {
       if (err.kind === 'ObjectId') {
-        next(new NotFoundError('Получен неверный ID'));
+        return next(new NotFoundError('Получен неверный ID'));
       }
-      next(new ServerError('Ошибка на сервере'));
+      return next(new ServerError('Ошибка на сервере'));
     });
 };
