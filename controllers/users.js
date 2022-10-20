@@ -71,35 +71,28 @@ module.exports.registerProfile = (req, res, next) => {
           return next(new ServerError('Ошибка на сервере'));
         });
     })
-    .catch((err) => {
-      if (err.code === 11000) {
-        return next(new ConflictError('Пользователь с таким email уже существует'));
-      }
-      if (err.name === 'ValidationError') {
-        return next(new ValidationError('Неправильный ввод данных'));
-      }
-      return next(new ServerError('Ошибка на сервере'));
+    .catch(() => {
+      next(new ServerError('Ошибка на сервере'));
     });
 };
 
 module.exports.loginProfile = (req, res, next) => {
   const { email, password } = req.body;
-  Users.findOne({ email })
+  Users.findOne({ email }).select('+password')
     .then((users) => {
       if (!users) {
         return next(new UnauthorizedError('Такого пользователя не существует'));
       }
-      bcrypt.compare(password, users.password, (error, isValidPassword) => {
+      return bcrypt.compare(password, users.password, (error, isValidPassword) => {
         if (!isValidPassword) {
           return next(new UnauthorizedError('Неверный пароль'));
         }
-        return next();
+        const token = jwt.sign({ _id: users._id }, 'some-secret-key', { expiresIn: '7d' });
+        return res.cookie('token', token, {
+          maxAge: 3600000 * 24 * 7,
+          httpOnly: true,
+        }).send({ token }).end();
       });
-      const token = jwt.sign({ _id: users._id }, 'some-secret-key', { expiresIn: '7d' });
-      return res.cookie('token', token, {
-        maxAge: 3600000 * 24 * 7,
-        httpOnly: true,
-      }).send({ token }).end();
     })
     .catch(() => {
       next(new ServerError('Ошибка на сервере'));
